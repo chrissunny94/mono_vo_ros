@@ -113,7 +113,10 @@ int estimate_vo(Mat img_1_c,Mat img_2_c){
     prevFeatures = currFeatures;
 
     int x = int(t_f.at<double>(0)) + 300;
+    delta_x = x;
     int y = int(t_f.at<double>(2)) + 100;
+    delta_y = y;
+    
     circle(traj, Point(x, y) ,1, CV_RGB(255,0,0), 2);
 
     rectangle( traj, Point(10, 30), Point(550, 50), CV_RGB(0,0,0), CV_FILLED);
@@ -291,9 +294,9 @@ int main(int argc, char **argv)
 
     //compute odometry in a typical way given the velocities of the robot
     double dt = (current_time - last_time).toSec();
-    double delta_x = (vx * cos(th) - vy * sin(th)) * dt;
-    double delta_y = (vx * sin(th) + vy * cos(th)) * dt;
-    double delta_th = vth * dt;
+    //double delta_x = (vx * cos(th) - vy * sin(th)) * dt;
+    //double delta_y = (vx * sin(th) + vy * cos(th)) * dt;
+    //double delta_th = vth * dt;
 
     x += delta_x;
     y += delta_y;
