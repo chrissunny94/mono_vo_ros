@@ -35,6 +35,7 @@ Mat traj = Mat::zeros(600, 600, CV_8UC3);
  double vx = 0.1;
  double vy = -0.1;
  double vth = 0.1;
+ double delta_x ,delta_y , delta_th;
  Mat img_1, img_2;
  Mat R_f, t_f; //the final rotation and tranlation vectors containing the 
  //double scale = 1.00;
@@ -70,7 +71,7 @@ int estimate_vo(Mat img_1_c,Mat img_2_c){
   t_f = t.clone();
   clock_t begin = clock();
   //namedWindow( "Road facing camera", WINDOW_AUTOSIZE );// Create a window for display.
-  namedWindow( "Trajectory", WINDOW_AUTOSIZE );// Create a window for display.
+ //namedWindow( "Trajectory", WINDOW_AUTOSIZE );// Create a window for display.
   Mat traj = Mat::zeros(600, 600, CV_8UC3);
   Mat currImage_c = img_1_c;
   cvtColor(currImage_c, currImage, COLOR_BGR2GRAY);
@@ -124,7 +125,7 @@ int estimate_vo(Mat img_1_c,Mat img_2_c){
     putText(traj, text, textOrg, fontFace, fontScale, Scalar::all(255), thickness, 8);
 
     //imshow( "Road facing camera", currImage_c );
-    imshow( "Trajectory", traj );
+    //imshow( "Trajectory", traj );
 
     //waitKey(1);
 
@@ -244,7 +245,7 @@ void imageCallback(const sensor_msgs::ImageConstPtr& msg)
 {
   try
   {
-    cv::imshow("view", cv_bridge::toCvShare(msg, "bgr8")->image);
+    //cv::imshow("view", cv_bridge::toCvShare(msg, "bgr8")->image);
     //cv::waitKey(30);
     if (prevImage_c.empty()){
           prevImage_c = cv_bridge::toCvCopy(msg, "bgr8")->image;
@@ -277,9 +278,9 @@ int main(int argc, char **argv)
   ros::NodeHandle nh;
   ros::Publisher odom_pub = nh.advertise<nav_msgs::Odometry>("odom", 50);
   tf::TransformBroadcaster odom_broadcaster;
-  cv::namedWindow("view");
-  cv::namedWindow( "Trajectory", WINDOW_AUTOSIZE );// Create a window for display.
-  cv::startWindowThread();
+  //cv::namedWindow("view");
+  //cv::namedWindow( "Trajectory", WINDOW_AUTOSIZE );// Create a window for display.
+  //cv::startWindowThread();
   image_transport::ImageTransport it(nh);
   image_transport::Subscriber sub = it.subscribe("/image_raw", 1, imageCallback);
   //ros::spin();
@@ -342,6 +343,6 @@ int main(int argc, char **argv)
     last_time = current_time;
     r.sleep();
   }
-  cv::destroyWindow("view");
-  cv::destroyWindow("Trajectory");
+  //cv::destroyWindow("view");
+  //cv::destroyWindow("Trajectory");
 }
