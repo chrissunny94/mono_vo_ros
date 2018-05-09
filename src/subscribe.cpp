@@ -113,22 +113,15 @@ int estimate_vo(Mat img_1_c,Mat img_2_c){
     prevImage = currImage.clone();
     prevFeatures = currFeatures;
 
-    int x = int(t_f.at<double>(0)) + 300;
+    int x = int(t_f.at<double>(0)) ;
     delta_x = x;
-    int y = int(t_f.at<double>(2)) + 100;
+    int y = int(t_f.at<double>(2)) ;
     delta_y = y;
+    delta_th =0;
     
     circle(traj, Point(x, y) ,1, CV_RGB(255,0,0), 2);
 
-    rectangle( traj, Point(10, 30), Point(550, 50), CV_RGB(0,0,0), CV_FILLED);
-    sprintf(text, "Coordinates: x = %02fm y = %02fm z = %02fm", t_f.at<double>(0), t_f.at<double>(1), t_f.at<double>(2));
-    putText(traj, text, textOrg, fontFace, fontScale, Scalar::all(255), thickness, 8);
-
-    //imshow( "Road facing camera", currImage_c );
-    //imshow( "Trajectory", traj );
-
-    //waitKey(1);
-
+  
   }
 
   clock_t end = clock();
