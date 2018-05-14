@@ -1,3 +1,4 @@
+<?xml version="1.0"?>
 <launch>
     <node pkg="robot_localization" type="ekf_localization_node" name="ekf_localization_imu" clear_params="true"> <!-- renamed to ekf_localization_custom to prevent name conflicts -->
 
