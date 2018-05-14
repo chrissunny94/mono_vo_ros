@@ -29,3 +29,15 @@ Running the code should automatically display one cv window.
 
 	git clone https://github.com/chrissunny94/mono_vo_ros
 	catkin_make
+	
+	
+#Source Code:
+
+
+**flow.cpp**
+
+ Extracts features, calculates optical flow, and performs perspective transform on a live camera feed. Publishes a geometry_msgs/Twist message to /optical_flow/twist which contains twist data in the form of velocity in x, y, z, roll, pitch, and yaw.
+
+**twist_data.py**
+
+ Converts output of flow.cpp from a geometry_msgs/Twist message to a nav_msgs/Odometry message which contains measurement covariances in addition to the original Twist data. This message is published to the /optical_flow topic.	
