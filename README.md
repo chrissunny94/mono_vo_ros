@@ -31,9 +31,11 @@ clone the repository and catkin_make
 	git clone https://github.com/chrissunny94/mono_vo_ros
 	catkin_make
 	
+
 	
 #Source Code:
 
+The below are the main scripts and what it does individually 
 
 **flow.cpp**
 
