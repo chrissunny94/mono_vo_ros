@@ -21,7 +21,6 @@ to start the visual odometery node
 ##### Visualization:
 Running the code should automatically display one cv window. 
 
-[![Demo](https://j.gifs.com/86N5lo.gif)](https://www.youtube.com/watch?v=P0ghKIdzdvM)
 
 
 ##Installation 
@@ -41,3 +40,6 @@ Running the code should automatically display one cv window.
 **twist_data.py**
 
  Converts output of flow.cpp from a geometry_msgs/Twist message to a nav_msgs/Odometry message which contains measurement covariances in addition to the original Twist data. This message is published to the /optical_flow topic.	
+
+
+[![Demo](https://j.gifs.com/86N5lo.gif)](https://www.youtube.com/watch?v=P0ghKIdzdvM)
