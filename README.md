@@ -21,6 +21,8 @@ to start the visual odometery node
 ##### Visualization:
 Running the code should automatically display one cv window. 
 
+[![Demo](https://j.gifs.com/86N5lo.gif)](https://www.youtube.com/watch?v=P0ghKIdzdvM)
+
 
 ##Installation 
 	
