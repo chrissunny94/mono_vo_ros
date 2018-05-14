@@ -39,3 +39,9 @@ include_directories(
 add_executable(subscribe src/subscribe.cpp)
 add_dependencies(subscribe ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(subscribe ${OpenCV_LIBS} ${catkin_LIBRARIES}  )
+
+ADD_EXECUTABLE(flow src/flow.cpp)
+TARGET_LINK_LIBRARIES(flow ${catkin_LIBRARIES} ${OpenCV_LIBS})
+
+ADD_EXECUTABLE(compare src/compare.cpp)
+TARGET_LINK_LIBRARIES(compare ${catkin_LIBRARIES})

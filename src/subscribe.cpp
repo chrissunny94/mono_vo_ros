@@ -28,17 +28,18 @@ Mat prevImage ,prevImage_c ;
 Mat currImage_c,currImage;
 Mat traj = Mat::zeros(600, 600, CV_8UC3);
 
- double x = 0.0;
- double y = 0.0;
- double th = 0.0;
+double x = 0.0;
+double y = 0.0;
+double th = 0.0;
 
- double vx = 0.1;
- double vy = -0.1;
- double vth = 0.1;
- double delta_x ,delta_y , delta_th;
- Mat img_1, img_2;
- Mat R_f, t_f; //the final rotation and tranlation vectors containing the 
- //double scale = 1.00;
+double vx = 0.1;
+double vy = -0.1;
+double vth = 0.1;
+double delta_x ,delta_y , delta_th;
+Mat img_1, img_2;
+Mat R_f, t_f; 
+//the final rotation and tranlation vectors containing the 
+//double scale = 1.00;
 
 
 int estimate_vo(Mat img_1_c,Mat img_2_c){
@@ -50,8 +51,8 @@ int estimate_vo(Mat img_1_c,Mat img_2_c){
   int thickness = 1;  
   cv::Point textOrg(10, 50);
   if ( !img_1_c.data || !img_2_c.data ) { 
-    std::cout<< " --(!) Error reading images " << std::endl; return -1;
-  }
+    	std::cout<< " --(!) Error reading images " << std::endl; return -1;
+  	}
   cvtColor(img_1_c, img_1, COLOR_BGR2GRAY);
   cvtColor(img_2_c, img_2, COLOR_BGR2GRAY);
   vector<Point2f> points1, points2;        //vectors to store the coordinates of the feature points
@@ -70,8 +71,8 @@ int estimate_vo(Mat img_1_c,Mat img_2_c){
   R_f = R.clone();
   t_f = t.clone();
   clock_t begin = clock();
-  //namedWindow( "Road facing camera", WINDOW_AUTOSIZE );// Create a window for display.
- //namedWindow( "Trajectory", WINDOW_AUTOSIZE );// Create a window for display.
+  //namedWindow( "view", WINDOW_AUTOSIZE );// Create a window for display.
+  //namedWindow( "Trajectory", WINDOW_AUTOSIZE );// Create a window for display.
   Mat traj = Mat::zeros(600, 600, CV_8UC3);
   Mat currImage_c = img_1_c;
   cvtColor(currImage_c, currImage, COLOR_BGR2GRAY);
@@ -104,25 +105,21 @@ int estimate_vo(Mat img_1_c,Mat img_2_c){
       cout << "trigerring redection" << endl;
       featureDetection(prevImage, prevFeatures);
       featureTracking(prevImage,currImage,prevFeatures,currFeatures, status);
+      prevImage = currImage.clone();
+      prevFeatures = currFeatures;
 
-   // }
-
+      int x = int(t_f.at<double>(0)) ;
+      delta_x = x;
+      int y = int(t_f.at<double>(2)) ;
+      delta_y = y;
+      delta_th =0;
     
-
-
-    prevImage = currImage.clone();
-    prevFeatures = currFeatures;
-
-    int x = int(t_f.at<double>(0)) ;
-    delta_x = x;
-    int y = int(t_f.at<double>(2)) ;
-    delta_y = y;
-    delta_th =0;
-    
-    circle(traj, Point(x, y) ,1, CV_RGB(255,0,0), 2);
+      circle(traj, Point(x, y) ,1, CV_RGB(255,0,0), 2);
 
   
-  }
+    }
+
+  cv::imshow("Trajectory", traj);
 
   clock_t end = clock();
   double elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
@@ -138,22 +135,16 @@ void imageCallback(const sensor_msgs::ImageConstPtr& msg)
 {
   try
   {
-    //cv::imshow("view", cv_bridge::toCvShare(msg, "bgr8")->image);
+    cv::imshow("view", cv_bridge::toCvShare(msg, "bgr8")->image);
     //cv::waitKey(30);
     if (prevImage_c.empty()){
           prevImage_c = cv_bridge::toCvCopy(msg, "bgr8")->image;
-          cout<<"module started\n";
-          
-        } 
+          cout<<"module started\n";   
+          } 
         else{
           prevImage_c = currImage_c;
           currImage_c = cv_bridge::toCvCopy(msg, "bgr8")->image;
-         
-            
-        }
-
-
-    
+          }   
   }
   catch (cv_bridge::Exception& e)
   {
@@ -167,9 +158,9 @@ int main(int argc, char **argv)
   ros::NodeHandle nh;
   ros::Publisher odom_pub = nh.advertise<nav_msgs::Odometry>("odom", 50);
   tf::TransformBroadcaster odom_broadcaster;
-  //cv::namedWindow("view");
-  //cv::namedWindow( "Trajectory", WINDOW_AUTOSIZE );// Create a window for display.
-  //cv::startWindowThread();
+  cv::namedWindow("view");
+  cv::namedWindow( "Trajectory", WINDOW_AUTOSIZE );// Create a window for display.
+  cv::startWindowThread();
   image_transport::ImageTransport it(nh);
   image_transport::Subscriber sub = it.subscribe("/image_raw", 1, imageCallback);
   //ros::spin();
@@ -193,49 +184,49 @@ int main(int argc, char **argv)
           catch(int e)
         {cout<<"odometry estimation failed";}
 
-    x += delta_x;
-    y += delta_y;
-    th += delta_th;
+    	x += delta_x;
+    	y += delta_y;
+    	th += delta_th;
 
     //since all odometry is 6DOF we'll need a quaternion created from yaw
-    geometry_msgs::Quaternion odom_quat = tf::createQuaternionMsgFromYaw(th);
+    	geometry_msgs::Quaternion odom_quat = tf::createQuaternionMsgFromYaw(th);
 
     //first, we'll publish the transform over tf
-    geometry_msgs::TransformStamped odom_trans;
-    odom_trans.header.stamp = current_time;
-    odom_trans.header.frame_id = "odom";
-    odom_trans.child_frame_id = "base_link";
+    	geometry_msgs::TransformStamped odom_trans;
+    	odom_trans.header.stamp = current_time;
+    	odom_trans.header.frame_id = "odom";
+    	odom_trans.child_frame_id = "base_link";
 
-    odom_trans.transform.translation.x = x;
-    odom_trans.transform.translation.y = y;
-    odom_trans.transform.translation.z = 0.0;
-    odom_trans.transform.rotation = odom_quat;
+   	odom_trans.transform.translation.x = x;
+    	odom_trans.transform.translation.y = y;
+    	odom_trans.transform.translation.z = 0.0;
+    	odom_trans.transform.rotation = odom_quat;
 
     //send the transform
-    odom_broadcaster.sendTransform(odom_trans);
+    	odom_broadcaster.sendTransform(odom_trans);
 
     //next, we'll publish the odometry message over ROS
-    nav_msgs::Odometry odom;
-    odom.header.stamp = current_time;
-    odom.header.frame_id = "odom";
+    	nav_msgs::Odometry odom;
+    	odom.header.stamp = current_time;
+    	odom.header.frame_id = "odom";
 
     //set the position
-    odom.pose.pose.position.x = x;
-    odom.pose.pose.position.y = y;
-    odom.pose.pose.position.z = 0.0;
-    odom.pose.pose.orientation = odom_quat;
+    	odom.pose.pose.position.x = x;
+    	odom.pose.pose.position.y = y;
+    	odom.pose.pose.position.z = 0.0;
+    	odom.pose.pose.orientation = odom_quat;
 
     //set the velocity
-    odom.child_frame_id = "base_link";
-    odom.twist.twist.linear.x = vx;
-    odom.twist.twist.linear.y = vy;
-    odom.twist.twist.angular.z = vth;
+    	odom.child_frame_id = "base_link";
+    	odom.twist.twist.linear.x = vx;
+    	odom.twist.twist.linear.y = vy;
+    	odom.twist.twist.angular.z = vth;
 
     //publish the message
-    odom_pub.publish(odom);
+    	odom_pub.publish(odom);
 
-    last_time = current_time;
-    r.sleep();
+    	last_time = current_time;
+      r.sleep();
   }
   //cv::destroyWindow("view");
   //cv::destroyWindow("Trajectory");
