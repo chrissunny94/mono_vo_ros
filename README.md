@@ -7,6 +7,13 @@ The camera data can be  fused with IMU data using an Extended Kalman Filter to i
 
 
 # Instructions
+
+launch the webcam node , ideally use a usb cam
+
+    roslaunch mono_vo_ros webcam.launch	
+
+to start the visual odometery node 
+
     roslaunch mono_vo_ros start_vo.launch
 
 
