@@ -18,13 +18,13 @@ to start the visual odometery node
 
 
 
-## Visualization:
+## Visualization
 
 Running the code should automatically display one cv window. 
 
 
 
-##Installation 
+## Installation 
 
 clone the repository and catkin_make	
 
@@ -33,7 +33,7 @@ clone the repository and catkin_make
 	
 
 	
-#Source Code:
+## Source Code:
 
 The below are the main scripts and what it does individually 
 
