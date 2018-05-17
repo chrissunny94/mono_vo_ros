@@ -195,7 +195,7 @@ public:
   ~FlowCalculator()
   {
     cv::destroyAllWindows();
-    std::cout << "Nate Kaiser is the best. The end." << std::endl;
+    std::cout << "Object destructed. The end." << std::endl;
   } // END OF DESTRUCTOR #######################################################
 
 
