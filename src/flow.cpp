@@ -123,7 +123,7 @@ public:
     std::cout << "instance of FlowCalculator class instantiated" << std::endl;
 
     // subscribe to input video stream from camera
-    image_sub = it_.subscribe("/usb_cam/image_raw", 1, &FlowCalculator::img_cb, this, image_transport::TransportHints("compressed"));
+    image_sub = it_.subscribe("/raspicam_node/image_raw", 1, &FlowCalculator::img_cb, this, image_transport::TransportHints("compressed"));
     // image_sub = it_.subscribe("/camera/image_color", 1, &FlowCalculator::img_cb, this, image_transport::TransportHints("compressed"));
 
     // publish output pose estimate to EKF
@@ -286,36 +286,7 @@ public:
     double pitch = asin(R.at<float>(2, 0));
     double yaw = -atan2(R.at<float>(1, 0), R.at<float>(0, 0));
 
-    // cout << "Trace(R) = " << traceof(R) << endl;
-    // if(traceof(R) > 0)
-    // {
-    //   // cout << "RPY: " << setw(15) << roll << setw(15) << pitch << setw(15) << yaw << endl;// '\t' << R.type() << endl;
-    //   cout << "R:\n" << R << '\n' << endl;
-    // }
-
-    // if(!(counter%15)) // every 1/2 second, print:
-    // {
-    //   // cout << "curr_track_indices:\n" << curr_track_indices << endl;
-    //   // cout << "prev_track_indices:\n" << prev_track_indices << endl;
-    //   // cout << "sizes of each:\t" << curr_track_indices.size() << '\t' << prev_track_indices.size() << endl;
-    //   // cout << "curr_track_undistorted:\n" << curr_track_undistorted << endl;
-    //   // cout << "prev_track_undistorted:\n" << prev_track_undistorted << endl;
-    //   // cout << "curr_track_centered:\n" << curr_track_centered << endl;
-    //   // cout << "prev_track_centered:\n" << prev_track_centered << endl;
-    //   // cout << "curr pixel val:\n" << curr.at<cv::Vec3b>(30,30) << endl;
-    //   // cout << "prev pixel val:\n" << prev.at<cv::Vec3b>(30,30) << endl;
-    //   cout << "F:\n" << F << endl;
-    //   cout << "E:\n" << E << endl;
-    //   cout << "R:\n" << R << endl;
-    //   cout << "Trace(R) = " << traceof(R) << endl;
-    //   cout << "t:\n" << t << endl;
-    // }
-
-    // package and send output pose to EKF
-    // pose_out.x = accumulated_motion.y;
-    // pose_out.y = 0;
-    // pose_out.theta = accumulated_motion.x / (2 * PI * 0.4485) * 2 * PI * 1.57;
-    // pose_pub.publish(pose_out);
+   
 
     // trying to do twist output instead:
     t_curr = ros::Time::now().toSec();
@@ -388,13 +359,9 @@ public:
     {
       if ((*first).x < 0.0 || (*first).x > CAM_PIX_U || (*first).y < 0.0 || (*first).y > CAM_PIX_V)
       {
-        // cout << "made it into the mystical for loop!" << endl;
-        // cout << "swapping this:" << *new_start;
-        // *new_start = *first;
+        
         prev_track_indices.erase(first);
-        //
-        // cout << " and this:" << *new_start << endl;
-        // ++new_start;
+        
       }
       ++first;
       // return new_start;
@@ -403,52 +370,11 @@ public:
 
     prev_track_indices.begin() = new_start;
 
-    // THIS IS SEGFAULTING RIGHT NOW, FIGURE IT OUT LATER
-    // RemoveOutOfBounds(prev_track_indices);
-
     ++counter %= TRAIL_LENGTH;
     t_prev = t_curr;
 
 
 
-// // $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-// // BEGIN FARNEBACK METHOD >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-// // $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-//
-//     // 0.4- image pyramid or simple image scale
-//     // 1 is number of pyramid layers. 1 mean that flow is calculated only from previous image.
-//     // 12 is win size.. Flow is computed over the window larger value is more robust to the noise.
-//     // 2 mean number of iteration of algorithm
-//     // 8 is polynomial degree expansion recommended value are 5 - 7
-//     // 1.2 standard deviation used to smooth used derivatives recommended values from 1.1 - 1,5
-//     calcOpticalFlowFarneback(prev, curr, curr_track_indices_mat, 0.5, 4, 21, 3, 7, 1.2, 0);
-//     // cout << "curr_track_indices_mat SIZE:\n" << curr_track_indices_mat.size() << '\n' << endl;
-//
-//     // F = findFundamentalMat(prev_track_centered, curr_track_centered, FM_RANSAC, 0.01, 0.99, F_indices_mask); // 0.01 is guess
-//     // cout << "F:\n" << F << endl;
-//
-//     out_img = curr_color; // copy over so we can draw tracked points over top
-//     for(int y = 0; y < curr_track_indices_mat.rows; y += 10)
-//     {
-//       for(int x = 0; x < curr_track_indices_mat.cols; x += 10)
-//       {
-//         // get the flow from y, x position * 10 for better visibility
-//         const Point2f flowatxy = curr_track_indices_mat.at<Point2f>(y, x) * 2;
-//         // draw line at flow direction
-//
-//         line(out_img, Point(x, y), Point(cvRound(x + flowatxy.x), cvRound(y + flowatxy.y)), Scalar(0,255,0));
-//         // draw initial point
-//         circle(out_img, Point(x, y), 1, Scalar(0, 0, 0), -1);
-//       }
-//     }
-//
-//     // draw the results
-//     imshow(ColorWinName, out_img);
-//     cv::waitKey(30); // 30 Hz camera = 33.3 ms per callback loop
-//
-//     curr.copyTo(prev); // deep copy, none of that shared pointer stuff
-//
-//     ++counter %= TRAIL_LENGTH;
 
   } // END OF FUNCTION img_cb() ################################################
 
@@ -501,17 +427,6 @@ public:
       (*it).y = Pprime(1, 0);
     }
     return coords; // return input, modified in place
-
-    // TRIED THIS BUT DON'T FEEL LIKE WASTING TIME WHEN I ALREADY HAVE A SOLUTION
-    // vector<Point3f> homogeneous_coords;
-    // convertPointsToHomogeneous(coords, homogeneous_coords);
-    // for(vector<Point3f>::iterator it = homogeneous_coords.begin(); it != homogeneous_coords.end(); ++it)
-    // {
-    //   *it = camera_matrix.inv() * (*it);
-    // }
-    // cout << "homogeneous_coords:\n" << homogeneous_coords << endl;
-    // would still have to run convertPointsFromHomogeneous() to get 2D point back
-
   } // END OF FUNCTION normalize() #############################################
 
 
@@ -633,40 +548,6 @@ public:
     // used to estimate camera motion relative to world
 
 
-    // int top = CAM_PIX_V * 2/3;
-    // int bot = CAM_PIX_V * 1/3; // ignoring middle 1/3 of image
-    // int top_count = 0;
-    // int bot_count = 0;
-    //
-    // int L = prev_coords.size();
-    // float ysum_top = 0.0;
-    // float ysum_bot = 0.0;
-    //
-    // float y_prev;
-    // vector<Point2f>::iterator it1 = prev_coords.begin(); // sizes should already
-    // vector<Point2f>::iterator it2 = curr_coords.begin(); // be verified equal
-    // for( ; it2 != curr_coords.end(); ++it1, ++it2)
-    // {
-    //   // loop through and find y-component of motion for all matching points
-    //   y_prev = (*it1).y;
-    //   if(y_prev < bot)
-    //   {
-    //     ysum_bot += (*it2).y - (*it1).y;
-    //     ++bot_count;
-    //   }
-    //   else if(y_prev > top)
-    //   {
-    //     ysum_top += (*it2).y - (*it1).y;
-    //     ++top_count;
-    // if(top_count < 15 || bot_count < 15)
-    // {
-    //   return Point2f(0.0, 0.0); // not enough valid points to get a good average
-    // }
-    // else
-    // {
-    //   float y_avg = ysum_bot/bot_count - ysum_top/top_count;
-    //   return Point2f(0.0, y_avg);
-    // }
 
 
     // DO RADIAL INSTEAD OF TOP/BOT DIFFERENTIAL
@@ -729,9 +610,7 @@ public:
 
   void RemoveOutOfBounds(vector<Point2f> &v)
   {
-    // this function emulates std::remove_if, which is technically
-    // only available in c++ version 11 or greater, and also does
-    // not work with OpenCV types anyway
+    
     for(vector<Point2f>::iterator it = v.begin(); it != v.end(); ++it)
     {
       if((*it).x < 0.0 || (*it).x > CAM_PIX_U || (*it).y < 0.0 || (*it).y > CAM_PIX_V)
@@ -749,7 +628,7 @@ public:
 
 int main(int argc, char** argv)
 {
-  ros::init(argc, argv, "reallydontknowwhattocallthisnode");
+  ros::init(argc, argv, "visual_odom_node");
   // ros::param::set("_image_transport", "compressed");
   FlowCalculator fc;
   ros::spin();
