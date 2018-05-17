@@ -1,5 +1,0 @@
-<launch>
-	<node pkg="mono_vo_ros" type="subscribe" name="subscribe" output="screen" >
-        <remap from="/image_raw" to="/camera/rgb/image_rect_color"/>
-	</node>
-</launch>
