@@ -161,18 +161,6 @@ public:
 
     counter = 0.0;
 
-    // THIS IS JUST FOR DEVELOPMENT PURPOSES:
-    // const Point2f dataz1[] = {Point2f(0.0, 0.0), Point2f(639.0, 0.0), Point2f(0.0, 479.0), Point2f(639.0, 479.0)};
-    // const Point2f dataz2[] = {Point2f(-0.075, 0.516), Point2f(0.075, 0.516), Point2f(-0.075, 0.381), Point2f(0.075, 0.381)};
-    // const Point2f dataz2[] = {Point2f(0.516, -0.075), Point2f(0.516, 0.075), Point2f(0.381, -0.075), Point2f(0.381, 0.075)};
-
-    // float turn_rad = 0.381 // meters, from center of robot to base of visible trapezoid
-    // float trap_base = 0.12; // meters, base of trapezoid visible to camera
-    // float trap_top = 0.15; // meters, top of trapezoid visible to camera
-    // float trap_height = 0.135; // meters, h
-
-    // cout << "HOMOGRAPHY / PERSPECTIVE PROJECTION = \n" << cv::getPerspectiveTransform(dataz1, dataz2) << endl;
-
     t_prev = ros::Time::now().toSec();
 
     geometry_msgs::Twist blah;
@@ -245,28 +233,12 @@ public:
     if(curr_track_indices.size() != prev_track_indices.size())
     { ROS_ERROR("tracking index data size different between previous and current images"); }
 
-    // Point2f derp = uv_left_right(prev_track_indices, curr_track_indices);
-    // float derpdyderp = estimate_heading(prev_track_indices, curr_track_indices);
-    // THIS PART CURRENTLY ONLY WORKS WELL WHEN THERE ARE > 50 TRACKING POINTS
-    // AND ALSO AT ~0.5 TURNING SPEED. AT 0.1 IT OVERESTIMATED (90deg WAS MEASURED AS 120deg)
-
-    // float derp2 = uv_fore_aft(prev_track_indices, curr_track_indices);
-    // float derp2 = estimate_travel(prev_track_indices, curr_track_indices);
+    
 
     derpz = estimate_motion(prev_track_indices, curr_track_indices);
     accumulated_motion += derpz;
     cout << "ACCUMULATED MOVEMENT = " << accumulated_motion << ", ANGLE = " << accumulated_motion.x / (2 * PI * 0.4485) * 360 * 1.57 << endl;
-    // x movement multiplied by circumference (2 * PI * Radius) multiplied by 360 (to convert to degrees)
-    // also multiplied by a constant of 1.57 based on test data
-    // cout << "ANGLE = " << accumulated_motion.x / (2 * PI * 0.4485) * 360 * 1.57 << endl;
-    // accumulated_travel += derp2;
-    // accumulated_heading += derpdyderp * 57.29; // converted to degrees just for visualization for now
-
-    // if(derpdyderp > 0.001 || derp2 > 0.1)
-    // {
-      // cout << "(#=" << prev_track_indices.size() << ")\tyaw, forward motion = " << setw(10) << accumulated_heading << ", " << setw(10) << accumulated_travel << endl;
-    // }
-
+    
     // comparison of findFundamentalMat solver techniques:
     // http://fhtagn.net/prog/2012/09/27/opencv-fundamentalmat.html
     // per this, may be better to use LMedS instead of RANSAC...
@@ -320,11 +292,7 @@ public:
 
     // draw tracked points for visualization purposes
     out_img = curr_color; // copy over so we can draw tracked points over top
-    // for(int i = 0; i < curr_track_indices.size(); ++i)
-    // {
-    //   circle(out_img, curr_track_indices[i], 3, Scalar(0, 255, 0), -1); // -1 = filled
-    // }
-
+    
     // draw epipolar lines for visualization purposes
     std::vector<cv::Vec<float, 3> > epilines1, epilines2;
     cv::computeCorrespondEpilines(prev_track_indices, 1, F, epilines1); //Index starts with 1
@@ -386,73 +354,8 @@ public:
 // BEGIN MEMBER FUNCTIONS >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 // $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
-  vector<Point2f> centerData(vector<Point2f> coords)
-  {
-    // see Lecture 12: Structure From Motion (slide on Factorization: Data Centering)
-    int L = coords.size();
+  
 
-    float xsum = 0.0;
-    float ysum = 0.0;
-    for(vector<Point2f>::iterator it = coords.begin(); it != coords.end(); ++it)
-    {
-      xsum += (*it).x;
-      ysum += (*it).y;
-    }
-
-    float xavg = xsum / L;
-    float yavg = ysum / L;
-    for(vector<Point2f>::iterator it = coords.begin(); it != coords.end(); ++it)
-    {
-      (*it).x -= xavg;
-      (*it).y -= yavg;
-    }
-
-    return coords; // return input, modified in place
-  } // END OF FUNCTION centerData() ############################################
-
-
-  vector<Point2f> normalize(vector<Point2f> coords)
-  {
-    // http://stackoverflow.com/questions/25251676/opencv-findfundamentalmat-very-unstable-and-sensitive
-    cv::Matx31d P;
-    cv::Matx31d Pprime;
-    for(vector<Point2f>::iterator it = coords.begin(); it != coords.end(); ++it)
-    {
-      P(0, 0) = (*it).x;
-      P(1, 0) = (*it).y;
-      P(2, 0) = 1; // homogeneous coordinates
-
-      Pprime = camera_matrix.inv() * P;
-      (*it).x = Pprime(0, 0);
-      (*it).y = Pprime(1, 0);
-    }
-    return coords; // return input, modified in place
-  } // END OF FUNCTION normalize() #############################################
-
-
-  Point2f uv_left_right(vector<Point2f> &prev_coords, vector<Point2f> &curr_coords)
-  {
-    // function to calculate the average (u, v) coordinate change from
-    // frame-to-frame, used to estimate camera motion relative to world
-    int L = prev_coords.size();
-    float xsum = 0.0;
-    float ysum = 0.0;
-
-    vector<Point2f>::iterator it1 = prev_coords.begin(); // sizes should already
-    vector<Point2f>::iterator it2 = curr_coords.begin(); // be verified equal
-    for( ; it2 != curr_coords.end(); ++it1, ++it2)
-    {
-      xsum += (*it2).x - (*it1).x;
-      ysum += (*it2).y - (*it1).y;
-    }
-
-    // calc average left/right tracked point movement
-    // also apply deadband of 1 pixel, so we don't accrue unnecessary error
-    float xavg = (fabs(xsum/L) > 1 ? xsum/L : 0);
-    float yavg = (fabs(ysum/L) > 1 ? ysum/L : 0);
-
-    return Point2f(xavg, yavg);
-  } // END OF FUNCTION uv_left_right() #########################################
 
 
   Point3f estimate_motion(vector<Point2f> &prev_coords, vector<Point2f> &curr_coords)
@@ -490,137 +393,10 @@ public:
   } // END OF FUNCTION estimate_motion() #######################################
 
 
-  float estimate_heading(vector<Point2f> &prev_coords, vector<Point2f> &curr_coords)
-  { // function to calculate the rotational motion from frame-to-frame
-    float turn_rad = 0.381; // meters, from center of robot to base of visible trapezoid
-    float trap_base = 0.12; // meters, base of trapezoid visible to camera
-    float trap_top = 0.15; // meters, top of trapezoid visible to camera
-    float trap_height = 0.135; // meters, height of trapezoid visible to camera
-
-    int N = prev_coords.size();
-    float tang_dist = 0.0;
-
-    // calc total left/right tracked point movement
-    vector<Point2f>::iterator it1 = prev_coords.begin(); // sizes should already
-    vector<Point2f>::iterator it2 = curr_coords.begin(); // be verified equal
-    for( ; it2 != curr_coords.end(); ++it1, ++it2)
-    {
-      // this calculates total tangential distance traveled in meters
-      tang_dist += ((*it2).x - (*it1).x) / CAM_PIX_U * trap_top - (trap_top - trap_base) * ((*it2).y + (*it1).y) / 2 / CAM_PIX_V;
-    }
-
-    // now calculate average and apply deadband of 0.001 m
-    // (so we don't accrue unnecessary noise errors)
-    // float uavg = (fabs(tang_dist/N) > 0.001 ? tang_dist/N : 0);
-    float uavg = tang_dist/N;
-
-    // return movement IN RADIANS
-    return uavg / CAM_PIX_U * CAM_M_U / CAM_RADIAL; // again, this is in RADIANS
-  } // END OF FUNCTION estimate_heading() ######################################
+  
 
 
-  float estimate_travel(vector<Point2f> &prev_coords, vector<Point2f> &curr_coords)
-  { // function to calculate the fore/aft distance driven from frame-to-frame
-    int N = prev_coords.size();
-    float vsum = 0.0;
-
-    // calc total left/right tracked point movement IN PIXELS
-    vector<Point2f>::iterator it1 = prev_coords.begin(); // sizes should already
-    vector<Point2f>::iterator it2 = curr_coords.begin(); // be verified equal
-    for( ; it2 != curr_coords.end(); ++it1, ++it2)
-    {
-      vsum += (*it2).y - (*it1).y;
-    }
-
-    // now calculate average and apply deadband of 1 pixel
-    // (so we don't accrue unnecessary noise errors)
-    float vavg = (fabs(vsum/N) > 1 ? vsum/N : 0);
-
-    // return fore/aft movement IN METERS
-    return vavg / CAM_PIX_V * CAM_M_U;
-
-  } // END OF FUNCTION estimate_travel() #######################################
-
-
-  float uv_fore_aft(vector<Point2f> &prev_coords, vector<Point2f> &curr_coords)
-  {
-    // function to calculate the z coordinate change from frame-to-frame
-    // used to estimate camera motion relative to world
-
-
-
-
-    // DO RADIAL INSTEAD OF TOP/BOT DIFFERENTIAL
-    float x_prev;
-    float y_prev;
-    float x_curr;
-    float y_curr;
-    float x_mid;
-    float y_mid;
-
-    double v_len;
-    float x_radial;
-    float y_radial;
-    float radial;
-    double radial_tot = 0;
-
-    vector<Point2f>::iterator it1 = prev_coords.begin(); // sizes should already
-    vector<Point2f>::iterator it2 = curr_coords.begin(); // be verified equal
-    for( ; it2 != curr_coords.end(); ++it1, ++it2)
-    { // loop through and find y-component of motion for all matching points
-      x_prev = (*it1).x;
-      y_prev = (*it1).y;
-      x_curr = (*it2).x;
-      y_curr = (*it2).y;
-      x_mid = (x_curr - x_prev)/2;
-      y_mid = (y_curr - y_prev)/2;
-      v_len = sqrt(pow(x_mid - CAM_PIX_U/2, 2) + pow(y_mid - CAM_PIX_V/2, 2));
-
-      x_radial = (2 * x_mid) * (x_mid - CAM_PIX_U/2)/v_len;
-      y_radial = (2 * y_mid) * (y_mid - CAM_PIX_V/2)/v_len;
-      radial = x_radial + y_radial;
-      radial_tot += radial;
-    }
-
-    double radial_avg = radial_tot/prev_coords.size(); // only care about average radial motion
-    return (radial_avg > 5 ? radial_avg : 0); // deadband of 5 pixels
-  } // END OF FUNCTION uv_fore_aft() ###########################################
-
-
-  double traceof(cv::Mat &input)
-  {
-    // function to calculate the trace of a matrix
-    // from http://math.stackexchange.com/questions/1737931/robustly-map-rotation-matrix-to-axis-angle:
-    // A fully robust approach will use different code when t, the trace of the
-    // matrix Q, is negative, as with quaternion extraction.
-    int N = input.rows;
-    if(N != input.cols)
-    {
-      ROS_ERROR("Can't find trace of non-square matrix!");
-      return 0;
-    }
-
-    double sum = 0.0;
-    for(int i = 0; i < N; ++i)
-    {
-      sum += input.at<double>(i, i);
-    }
-    return sum;
-  } // END OF FUNCTION traceof() ###############################################
-
-  void RemoveOutOfBounds(vector<Point2f> &v)
-  {
-    
-    for(vector<Point2f>::iterator it = v.begin(); it != v.end(); ++it)
-    {
-      if((*it).x < 0.0 || (*it).x > CAM_PIX_U || (*it).y < 0.0 || (*it).y > CAM_PIX_V)
-      {
-        prev_track_indices.erase(it);
-      }
-    }
-
-    return;
-  } // END OF FUNCTION RemoveOutOfBounds() #####################################
+  
 
 }; // END OF CLASS FlowCalculator ##############################################
 
