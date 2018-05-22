@@ -123,7 +123,7 @@ public:
     std::cout << "instance of FlowCalculator class instantiated" << std::endl;
 
     // subscribe to input video stream from camera
-    image_sub = it_.subscribe("/raspicam_node/image_raw", 1, &FlowCalculator::img_cb, this, image_transport::TransportHints("compressed"));
+    image_sub = it_.subscribe("/raspicam_node/image", 1, &FlowCalculator::img_cb, this, image_transport::TransportHints("compressed"));
     // image_sub = it_.subscribe("/camera/image_color", 1, &FlowCalculator::img_cb, this, image_transport::TransportHints("compressed"));
 
     // publish output pose estimate to EKF
