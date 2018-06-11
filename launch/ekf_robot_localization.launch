@@ -1,4 +1,6 @@
 <?xml version="1.0"?>
+
+
 <launch>
     <!-- USE THIS FOR ALL ZERO DATA -->
     <!-- <node pkg="mono_vo_ros" type="optical_flow_test_data.py" name="optical_flow_test_data" /> -->
@@ -35,6 +37,8 @@
      
 
       <param name="odom0_differential" value="false"/>
+      <param name="publish_null_when_lost" value="false"/>
+      
      
 
       <rosparam param="process_noise_covariance">[0.05, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,

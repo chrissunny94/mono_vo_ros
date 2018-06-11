@@ -130,6 +130,11 @@ public:
     pose_pub = nh_.advertise<geometry_msgs::Pose2D>("/optical_flow/pose", 1);
     twist_pub = nh_.advertise<geometry_msgs::Twist>("/optical_flow/twist", 1);
 
+    // create a single window instance, overwrite each loop
+    //ColorWinName = "Color Output Window";
+    //cv::namedWindow(ColorWinName, WINDOW_AUTOSIZE);
+
+    // hack these for now since can't initialize the way I want to (stupid pre-c++11!)
     double camera_matrix_data[9] = {1149.322298, 0.0, 351.778662, 0.0, 1151.593614, 276.459807, 0.0, 0.0, 1.0};
     camera_matrix = cv::Mat(3, 3, CV_64F, camera_matrix_data);
 
@@ -234,7 +239,26 @@ public:
     accumulated_motion += derpz;
     cout << "ACCUMULATED MOVEMENT = " << accumulated_motion << ", ANGLE = " << accumulated_motion.x / (2 * PI * 0.4485) * 360 * 1.57 << endl;
     
-    
+    // comparison of findFundamentalMat solver techniques:
+    // http://fhtagn.net/prog/2012/09/27/opencv-fundamentalmat.html
+    // per this, may be better to use LMedS instead of RANSAC...
+    F = findFundamentalMat(prev_track_indices, curr_track_indices, FM_RANSAC, 1, 0.99, flow_status);
+    E = camera_matrix.t() * F * camera_matrix; // calculate Essential matrix from Fundamental matrix and camera matrix
+
+    // helpful clarification:
+    // http://stackoverflow.com/questions/16639106/camera-motion-from-corresponding-images
+    // syntax inspiration found at:
+    // http://www.morethantechnical.com/2012/02/07/structure-from-motion-and-3d-reconstruction-on-the-easy-in-opencv-2-3-w-code/
+    SVD svd(E);
+    R = svd.u * Mat(W) * svd.vt;
+    t = svd.u.col(2);
+    // cout << "R:\n" << R << '\n' << endl;
+
+    double roll = atan2(R.at<float>(2, 1), R.at<float>(2, 2));
+    double pitch = asin(R.at<float>(2, 0));
+    double yaw = -atan2(R.at<float>(1, 0), R.at<float>(0, 0));
+
+   
 
     // trying to do twist output instead:
     t_curr = ros::Time::now().toSec();
@@ -268,6 +292,29 @@ public:
     ++filter_count %= 5;
 
 
+    // draw tracked points for visualization purposes
+    out_img = curr_color; // copy over so we can draw tracked points over top
+    
+    // draw epipolar lines for visualization purposes
+    std::vector<cv::Vec<float, 3> > epilines1, epilines2;
+    cv::computeCorrespondEpilines(prev_track_indices, 1, F, epilines1); //Index starts with 1
+    cv::computeCorrespondEpilines(curr_track_indices, 2, F, epilines2);
+
+    CV_Assert(prev_track_indices.size() == epilines1.size() && epilines1.size() == epilines2.size());
+
+    cv::RNG rng(0);
+    for(int i = 0; i < prev_track_indices.size(); i++)
+    {
+      // Epipolar lines of the 1st point set are drawn in the 2nd image and vice-versa
+      cv::Scalar color(rng(256),rng(256),rng(256));
+
+      // cv::line(out_img, cv::Point(0,-epilines1[i][2]/epilines1[i][1]), cv::Point(prev.cols,-(epilines1[i][2]+epilines1[i][0]*prev.cols)/epilines1[i][1]), color);
+      // cv::circle(out_img, curr_track_indices[i], 3, color, -1, CV_AA);
+      cv::circle(out_img, curr_track_indices[i], 3, Scalar(0, 255, 0), -1, CV_AA);
+    }
+
+    //imshow(ColorWinName, out_img);
+    //cv::waitKey(30); // 30 Hz camera = 33.3 ms per callback loop, hold for 30
 
     curr.copyTo(prev); // deep copy, none of that shared pointer stuff
 
