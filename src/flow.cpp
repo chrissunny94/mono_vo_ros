@@ -131,8 +131,8 @@ public:
     twist_pub = nh_.advertise<geometry_msgs::Twist>("/optical_flow/twist", 1);
 
     // create a single window instance, overwrite each loop
-    ColorWinName = "Color Output Window";
-    cv::namedWindow(ColorWinName, WINDOW_AUTOSIZE);
+    //ColorWinName = "Color Output Window";
+    //cv::namedWindow(ColorWinName, WINDOW_AUTOSIZE);
 
     // hack these for now since can't initialize the way I want to (stupid pre-c++11!)
     double camera_matrix_data[9] = {1149.322298, 0.0, 351.778662, 0.0, 1151.593614, 276.459807, 0.0, 0.0, 1.0};
@@ -263,6 +263,8 @@ public:
     // trying to do twist output instead:
     t_curr = ros::Time::now().toSec();
     twist_out.linear.x = derpz.y / (t_curr - t_prev);
+    twist_out.linear.y = derpz.y ;
+    twist_out.linear.z = derpz.z / (t_curr - t_prev);
     twist_out.angular.z = derpz.x / (2 * PI * 0.4485) * 2 * PI * 1.57 / (t_curr - t_prev);
 
     filter[filter_count] = twist_out;
@@ -311,8 +313,8 @@ public:
       cv::circle(out_img, curr_track_indices[i], 3, Scalar(0, 255, 0), -1, CV_AA);
     }
 
-    imshow(ColorWinName, out_img);
-    cv::waitKey(30); // 30 Hz camera = 33.3 ms per callback loop, hold for 30
+    //imshow(ColorWinName, out_img);
+    //cv::waitKey(30); // 30 Hz camera = 33.3 ms per callback loop, hold for 30
 
     curr.copyTo(prev); // deep copy, none of that shared pointer stuff
 

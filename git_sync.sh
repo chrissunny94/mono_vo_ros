@@ -12,6 +12,6 @@ git config --global credential.helper 'cache --timeout=3600'
 git pull
 git add -A
 
-git commit -m "New changes"
+git commit -m "$1"
 git push -u origin master
 
