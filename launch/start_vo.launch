@@ -3,7 +3,11 @@
 
 <launch>
     <node pkg="mono_vo_ros" type="flow" name="optical_flow_pub" />
+<<<<<<< HEAD
    <node pkg="mono_vo_ros" type="twist_data.py" name="data_converter" />
+=======
+   <!-- <node pkg="mono_vo_ros" type="twist_data.py" name="data_converter" />-->
+>>>>>>> fa9b3c8f0af24d26713063fea8ba8b94187fe8c5
     <include file="$(find mono_vo_ros)/launch/ekf_robot_localization.launch"/>	
     <!--<include file="$(find mono_vo_ros)/launch/ekf_robot_localization_encoder.launch"/>
     <include file="$(find mono_vo_ros)/launch/ekf.launch"/>-->
