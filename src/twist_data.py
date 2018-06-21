@@ -22,7 +22,7 @@ class optical_flow_conversion:
         self.visual_odom.twist.twist.angular.y = 0.0
         self.visual_odom.twist.twist.angular.z = data.angular.z
 
-        self.visual_odom.header.frame_id = 'base_link'
+        self.visual_odom.header.frame_id = 'raspicam'
 	#self.visual_odom.header.child_frame_id = 'base_link'
         self.visual_odom.header.stamp = self.current_time
         self.visual_odom.twist.covariance[0] = 0.001
