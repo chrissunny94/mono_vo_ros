@@ -240,7 +240,7 @@ public:
     t_curr = ros::Time::now().toSec();
     twist_out.linear.x = derpz.y / (t_curr - t_prev);
     twist_out.linear.y = derpz.y ;
-    twist_out.linear.z = derpz.z / (t_curr - t_prev);
+   // twist_out.linear.z = derpz.z / (t_curr - t_prev);
     twist_out.angular.z = derpz.x / (2 * PI * 0.4485) * 2 * PI * 1.57 / (t_curr - t_prev);
 
     filter[filter_count] = twist_out;
