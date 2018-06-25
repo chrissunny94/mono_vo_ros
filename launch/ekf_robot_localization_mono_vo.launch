@@ -7,7 +7,7 @@
 
     <!-- USE THIS FOR OUTPUT OF flow.cpp -->
     <!-- <node pkg="mono_vo_ros" type="pose_data.py" name="pose_data" /> -->
-    <node pkg="mono_vo_ros" type="twist_data.py" name="twist_data" />
+    <node pkg="mono_vo_ros" type="twist_data_mono_vo.py" name="twist_data" />
 
    <node pkg="robot_localization" type="ekf_localization_node" name="ekf_localization_custom" clear_params="true"> <!-- renamed to ekf_localization_custom to prevent name conflicts -->
 

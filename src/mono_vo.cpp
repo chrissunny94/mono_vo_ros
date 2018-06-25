@@ -83,7 +83,7 @@ FlowCalculator()
 	std::cout << "instance of FlowCalculator class instantiated" << std::endl;
 
     // subscribe to input video stream from camera
-    image_sub = it_.subscribe("/my_camera/image_raw", 1, &FlowCalculator::img_cb, this, image_transport::TransportHints("compressed"));
+    image_sub = it_.subscribe("/raspicam/image", 1, &FlowCalculator::img_cb, this, image_transport::TransportHints("compressed"));
     pub = it_.advertise("camera/image", 1);
     twist_pub = nh_.advertise<geometry_msgs::Twist>("/optical_flow/twist", 1);
     t_prev = ros::Time::now().toSec();	
@@ -114,8 +114,8 @@ void img_cb(const sensor_msgs::ImageConstPtr& input)
       return;
     }
     cv::cvtColor(curr_color, curr, CV_BGR2GRAY); // create curr (grayscale version of the input image)
-    imshow ( "input", curr );
-    cv::waitKey(10); 
+    //imshow ( "input", curr );
+    //cv::waitKey(10); 
 
 	
     if(prev.data) // Check for invalid input, also handles 1st time being called
@@ -205,7 +205,7 @@ void Return_Pose(Mat img_1 ,Mat img_2){
 			}
 			Mat img_goodmatch;
 			drawMatches ( img_1, keypoints_1, img_2, keypoints_2, good_matches, img_goodmatch );
-			imshow ( "good_match", img_goodmatch );
+			//imshow ( "good_match", img_goodmatch );
 			msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", img_goodmatch).toImageMsg();
 			pub.publish(msg);
 			}
