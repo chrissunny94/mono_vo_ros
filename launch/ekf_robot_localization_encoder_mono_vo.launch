@@ -1,17 +1,14 @@
 <?xml version="1.0"?>
-
-
 <launch>
-  
-    <node pkg="mono_vo_ros" type="twist_data.py" name="twist_data" />
+    
 
-   <node pkg="robot_localization" type="ekf_localization_node" name="ekf_localization_custom" clear_params="true"> <!-- renamed to ekf_localization_custom to prevent name conflicts -->
+    <node pkg="robot_localization" type="ekf_localization_node" name="ekf_localization_encoder" clear_params="true"> <!-- renamed to ekf_localization_custom to prevent name conflicts -->
 
-      <param name="frequency" value="30"/> <!-- this value should be fine -->
+      <param name="frequency" value="10"/> <!-- this value should be fine -->
 
       <param name="sensor_timeout" value="0.1"/> <!-- this value should be fine -->
 
-      <param name="two_d_mode" value="false"/> <!-- could make this true to stick to XY plane.. -->
+      <param name="two_d_mode" value="true"/> <!-- could make this true to stick to XY plane.. -->
 
       <!-- based these values off of the ROScon presentation -->
       <param name="map_frame" value="map"/>
@@ -19,33 +16,31 @@
       <param name="base_link_frame" value="base_link"/>
       <param name="world_frame" value="odom"/>
 
-      <param name="odom0" value="/optical_flow"/>
-      <!-- <param name="odom1" value="/ubiquity_velocity_controller/odom"/>
+      <param name="odom0" value="/ubiquity_velocity_controller/odom"/>
       
-      settings for using Twist -->
-      <rosparam param="odom0_config">[false, false,  false,
+     
+      <!-- settings for using Twist -->
+      <rosparam param="odom0_config">[true,  true,  true,
                                       false, false, false,
-                                      true, true, false,
+                                      true, true, true,
                                       false, false, true,
                                       false, false, false]</rosparam>
 
-<!--
-     <rosparam param="odom1_config">[true, true, false,  
-                                  false, false, true, 
-                                  true, true, false,   
-                                  false, false, true,
-                                  false, false, false]</rosparam>
-
--->
-      <param name="odom0_differential" value="true"/>
- <!--     <param name="odom1_differential" value="true"/> -->
-      <param name="publish_null_when_lost" value="false"/>
-      <param name="odom0_relative" value="false"/>
-<!--      <param name="odom1_relative" value="false"/>   -->
-
-      <param name="odom0_queue_size" value="10"/>
+      <param name="odom1" value="/odometry/visual"/>
+      
      
-     	
+      <!-- settings for using Twist -->
+      <rosparam param="odom1_config">[false,  false,  false,
+                                      false, false, false,
+                                      true, true, true,
+                                      false, false, true,
+                                      false, false, false]</rosparam>
+
+    
+      <param name="odom0_differential" value="true"/>
+      <param name="odom1_differential" value="false"/>
+      <param name="publish_null_when_lost" value="true"/>
+
       <rosparam param="process_noise_covariance">[0.05, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
                                                   0.0, 0.05, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
                                                   0.0, 0.0, 0.06, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
@@ -62,7 +57,7 @@
                                                   0.0, 0.0, 0.0, 0.0, 0.00, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.01, 0.0,
                                                   0.0, 0.0, 0.0, 0.0, 0.00, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.015]</rosparam>
 
-      <remap from="/odometry/filtered" to="/odometry/visual" />
+      <remap from="/odometry/filtered" to="/odometry/fussed" />
     </node>
 
 </launch>
