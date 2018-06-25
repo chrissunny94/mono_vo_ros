@@ -28,7 +28,7 @@ using namespace std;
 using namespace cv;
 
 
-class FlowCalculator
+class MonoVo
 {
 private:
   // set up ROS
@@ -71,7 +71,7 @@ private:
 public:
 
 //Constructor
-FlowCalculator()
+MonoVo()
   : it_(nh_)
   {	
 	detector = ORB::create();
@@ -80,10 +80,10 @@ FlowCalculator()
 	count = 0;
 	pp = cv::Point2d(607.1928, 185.2157);
 	matcher  = DescriptorMatcher::create ( "BruteForce-Hamming" );
-	std::cout << "instance of FlowCalculator class instantiated" << std::endl;
+	std::cout << "instance of MonoVo class instantiated" << std::endl;
 
     // subscribe to input video stream from camera
-    image_sub = it_.subscribe("/raspicam/image", 1, &FlowCalculator::img_cb, this, image_transport::TransportHints("compressed"));
+    image_sub = it_.subscribe("/raspicam_node/image", 1, &MonoVo::img_cb, this, image_transport::TransportHints("compressed"));
     pub = it_.advertise("camera/image", 1);
     twist_pub = nh_.advertise<geometry_msgs::Twist>("/optical_flow/twist", 1);
     t_prev = ros::Time::now().toSec();	
@@ -91,7 +91,7 @@ FlowCalculator()
 // END OF CONSTRUCTOR ######################################################
 
 //Destructor
-  ~FlowCalculator()
+  ~MonoVo()
   {
     cv::destroyAllWindows();
     std::cout << "Object destructed. The end." << std::endl;
@@ -236,13 +236,13 @@ void Return_Pose(Mat img_1 ,Mat img_2){
 
 }; 
 
-// END OF CLASS FlowCalculator ##############################################
+// END OF CLASS MonoVo ##############################################
 
 
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "visual_odom_node");
-  FlowCalculator fc;
+  MonoVo fc;
   ros::spin();
   return 0;
 }

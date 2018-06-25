@@ -2,8 +2,8 @@
 <package>
   <name>mono_vo_ros</name>
   <version>0.0.0</version>
-  <description>The cone_detector package</description>
-  <maintainer email="aanders@mit.edu">Ari</maintainer>
+  <description>monocular visual odometry node</description>
+  <maintainer email="chrissunny94@gmail.com">Chris Sunny Thaliyath</maintainer>
   <license>MIT</license>
   
   <buildtool_depend>catkin</buildtool_depend>

@@ -43,5 +43,6 @@ TARGET_LINK_LIBRARIES(flow ${catkin_LIBRARIES} ${OpenCV_LIBS})
 ADD_EXECUTABLE(mono_vo src/mono_vo.cpp)
 TARGET_LINK_LIBRARIES(mono_vo ${catkin_LIBRARIES} ${OpenCV_LIBS})
 
+
 #ADD_EXECUTABLE(compare src/compare.cpp)
 #TARGET_LINK_LIBRARIES(compare ${catkin_LIBRARIES})
