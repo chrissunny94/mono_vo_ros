@@ -10,11 +10,13 @@ The camera data can be  fused with IMU data using an Extended Kalman Filter to i
 
 	
 
-to start the visual odometery node 
+to start the visual odometery hack node 
 
     roslaunch mono_vo_ros start_vo.launch
 
+to start the visual odometery node using Essential matrix method 
 
+    roslaunch mono_vo_ros start_vo_mono.launch
 
 ## Visualization
 
