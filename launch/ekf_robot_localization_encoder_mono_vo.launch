@@ -26,14 +26,14 @@
                                       false, false, true,
                                       false, false, false]</rosparam>
 
-      <param name="odom1" value="/odometry/visual"/>
+      <param name="odom1" value="/optical_flow"/>
       
      
       <!-- settings for using Twist -->
-      <rosparam param="odom1_config">[true,  true,  true,
-                                      true, true, true,
-                                      true, true, true,
-                                      true, true, true,
+      <rosparam param="odom1_config">[true,  true,  false,
+                                      false, false, true,
+                                      true, false, false,
+                                      false, false, true,
                                       false, false, false]</rosparam>
 
     

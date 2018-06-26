@@ -18,9 +18,7 @@ find_package(OpenCV REQUIRED)
 ###################################
 ## catkin specific configuration ##
 ###################################
-catkin_package(
-  LIBRARIES cone_detector
-)
+
 
 ###########
 ## Build ##
@@ -31,7 +29,9 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
 )
-
+catkin_package(
+  LIBRARIES 
+)
 
 ## Declare a C++ executable
 

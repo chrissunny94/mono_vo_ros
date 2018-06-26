@@ -3,6 +3,9 @@
 #include <sensor_msgs/image_encodings.h>
 #include <geometry_msgs/Pose2D.h>
 #include <geometry_msgs/Twist.h>
+#include <nav_msgs/Odometry.h>
+#include <tf/tf.h>
+#include <geometry_msgs/Pose.h>
 
 // for subscribing to compressed image topics:
 #include <image_transport/image_transport.h>
@@ -37,7 +40,9 @@ private:
   image_transport::Subscriber image_sub;
   image_transport::Publisher pub;
   ros::Publisher twist_pub;
-  geometry_msgs::Twist twist_out;		
+  ros::Subscriber scale_sub;
+  geometry_msgs::Twist twist_out;
+  ros::Subscriber caminfo_sub;			
 
   cv::Mat curr_color;
   sensor_msgs::ImagePtr msg;	
@@ -66,7 +71,14 @@ private:
     int count;
 
     double t_curr;
-    double t_prev;	
+    double t_prev;
+   bool haveCamInfo;
+    cv::Mat cameraMatrix;
+    cv::Mat distortionCoeffs;
+    int frameNum;
+    std::string frameId;
+    double scale;
+    double prev_scale;		
 
 public:
 
@@ -74,9 +86,35 @@ public:
 MonoVo()
   : it_(nh_)
   {	
-	detector = ORB::create();
+
+	// Default parameters of ORB
+    int nfeatures=500;
+    float scaleFactor=1.2f;
+    int nlevels=8;
+    int edgeThreshold=15; // Changed default (31);
+    int firstLevel=0;
+    int WTA_K=2;
+    int scoreType=ORB::HARRIS_SCORE;
+    int patchSize=31;
+    int fastThreshold=20;
+	detector = ORB::create(nfeatures,
+    		scaleFactor,
+    		nlevels,
+    		edgeThreshold,
+    		firstLevel,
+    		WTA_K,
+    		scoreType,
+    		patchSize,
+    		fastThreshold );
 	descriptor = ORB::create();
-        focal = 718.8560;
+	scale = 0;
+	prev_scale =0;
+	caminfo_sub = nh_.subscribe("/raspicam_node/camera_info", 1,
+			       &MonoVo::camInfoCallback, this);
+	nh_.param<double>("errorCorrectionRate", focal , 718.8560);
+	
+	scale_sub = nh_.subscribe("/ubiquity_velocity_controller/odom",1000, &MonoVo::scaleCallback ,this);
+        
 	count = 0;
 	pp = cv::Point2d(607.1928, 185.2157);
 	matcher  = DescriptorMatcher::create ( "BruteForce-Hamming" );
@@ -84,7 +122,7 @@ MonoVo()
 
     // subscribe to input video stream from camera
     image_sub = it_.subscribe("/raspicam_node/image", 1, &MonoVo::img_cb, this, image_transport::TransportHints("compressed"));
-    pub = it_.advertise("camera/image", 1);
+    pub = it_.advertise("mono_vo_output/image", 1);
     twist_pub = nh_.advertise<geometry_msgs::Twist>("/optical_flow/twist", 1);
     t_prev = ros::Time::now().toSec();	
 } 
@@ -114,9 +152,7 @@ void img_cb(const sensor_msgs::ImageConstPtr& input)
       return;
     }
     cv::cvtColor(curr_color, curr, CV_BGR2GRAY); // create curr (grayscale version of the input image)
-    //imshow ( "input", curr );
-    //cv::waitKey(10); 
-
+   
 	
     if(prev.data) // Check for invalid input, also handles 1st time being called
     	{
@@ -131,6 +167,42 @@ void img_cb(const sensor_msgs::ImageConstPtr& input)
 	ROS_WARN("prev image data not available, assigning to curr data");
 	curr.copyTo(prev);		
     	 }	
+}
+
+
+void camInfoCallback(const sensor_msgs::CameraInfo::ConstPtr& msg)
+{
+    if (haveCamInfo) {
+        return;
+    }
+
+    if (msg->K != boost::array<double, 9>({0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0})) {
+        for (int i=0; i<3; i++) {
+            for (int j=0; j<3; j++) {
+                cameraMatrix.at<double>(i, j) = msg->K[i*3+j];
+            }
+        }
+
+        for (int i=0; i<5; i++) {
+            distortionCoeffs.at<double>(0,i) = msg->D[i];
+        }
+
+        haveCamInfo = true;
+        frameId = msg->header.frame_id;
+    }
+    else {
+        ROS_WARN("%s", "CameraInfo message has invalid intrinsics, K matrix all zeros");
+    }
+}
+
+
+void scaleCallback(const nav_msgs::Odometry::ConstPtr& msg){
+
+	
+	scale = sqrt(pow(msg->pose.pose.position.x,2) + pow(msg->pose.pose.position.y,2) +pow(msg->pose.pose.position.z,2));
+	scale = scale - prev_scale;
+	prev_scale = scale;
+	
 }
 
 void Return_Pose(Mat img_1 ,Mat img_2){
@@ -186,7 +258,7 @@ void Return_Pose(Mat img_1 ,Mat img_2){
 			E = findEssentialMat(currFeatures, prevFeatures, focal, pp, RANSAC, 0.999, 1.0, mask);
 			recoverPose(E, currFeatures, prevFeatures, R, t, focal, pp, mask);
 			if(count >2){
-				t_f = t_f + .1*(R_f*t);
+				t_f = t_f + scale*(R_f*t);
       				R_f = R*R_f;
 				
 				t_curr = ros::Time::now().toSec();
@@ -204,7 +276,8 @@ void Return_Pose(Mat img_1 ,Mat img_2){
 				R_f = R;
 			}
 			Mat img_goodmatch;
-			drawMatches ( img_1, keypoints_1, img_2, keypoints_2, good_matches, img_goodmatch );
+			drawKeypoints(img_2,keypoints_2,img_goodmatch ,Scalar::all(-1), DrawMatchesFlags::DEFAULT );
+			//drawMatches ( img_1, keypoints_1, img_2, keypoints_2, good_matches, img_goodmatch );
 			//imshow ( "good_match", img_goodmatch );
 			msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", img_goodmatch).toImageMsg();
 			pub.publish(msg);
