@@ -45,5 +45,4 @@ The below are the main scripts and what it does individually
 
  Converts output of flow.cpp from a geometry_msgs/Twist message to a nav_msgs/Odometry message which contains measurement covariances in addition to the original Twist data. This message is published to the /optical_flow topic.	
 
-
-[![Demo](https://j.gifs.com/86N5lo.gif)](https://www.youtube.com/watch?v=P0ghKIdzdvM)
+![](docs/demo.gif) 
