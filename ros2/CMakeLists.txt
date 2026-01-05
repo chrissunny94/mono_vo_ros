@@ -18,12 +18,12 @@ set(MONO_VO_CORE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/..)
 # Core library
 # --------------------------------------------------
 add_library(mono_vo_core
-  ${MONO_VO_CORE_DIR}/src/mono_vo_core.cpp
+  ${MONO_VO_CORE_DIR}/src_core/mono_vo_core.cpp
 )
 
 target_include_directories(mono_vo_core
   PUBLIC
-    ${MONO_VO_CORE_DIR}/include
+    ${MONO_VO_CORE_DIR}/include_core
     ${OpenCV_INCLUDE_DIRS} 
 )
 
