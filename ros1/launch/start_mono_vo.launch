@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+
+
+<launch>
+    <node pkg="mono_vo_ros" type="mono_vo" name="optical_flow_pub" />
+    <node pkg="mono_vo_ros" type="twist_data_mono_vo.py" name="data_converter" />
+    <!--<include file="$(find mono_vo_ros)/launch/ekf_robot_localization_mono_vo.launch"/>-->	
+    <include file="$(find mono_vo_ros)/launch/ekf_robot_localization_encoder_mono_vo.launch"/>
+    <!--<include file="$(find mono_vo_ros)/launch/ekf.launch"/>-->
+     
+</launch>

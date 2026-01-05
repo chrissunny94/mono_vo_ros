@@ -46,3 +46,16 @@ The below are the main scripts and what it does individually
  Converts output of flow.cpp from a geometry_msgs/Twist message to a nav_msgs/Odometry message which contains measurement covariances in addition to the original Twist data. This message is published to the /optical_flow topic.	
 
 ![](docs/demo.gif) 
+
+
+
+## CODE STRUCTURE
+
+```
+mono_vo_ros/
+├── include/mono_vo_core.hpp     <-- ROS-agnostic API
+├── src/mono_vo_core.cpp         <-- ROS-agnostic implementation
+├── ros1/                        <-- ROS1 wrapper + launch + params
+├── ros2/                        <-- ROS2 wrapper
+
+```

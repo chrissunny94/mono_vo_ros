@@ -1,0 +1,11 @@
+<package format="3">
+  <name>mono_vo_ros2</name>
+  <version>0.1.0</version>
+  <description>ROS-agnostic monocular visual odometry core</description>
+
+  <maintainer email="chris@example.com">Chris</maintainer>
+  <license>MIT</license>
+
+  <buildtool_depend>cmake</buildtool_depend>
+  <depend>opencv</depend>
+</package>
